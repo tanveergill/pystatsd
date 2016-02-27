@@ -121,6 +121,15 @@ class StatsClientBase(object):
         if self._prefix:
             stat = '%s.%s' % (self._prefix, stat)
 
+        if self._tags and len(self._tags) > 0:
+            tags = ''
+            for index in range(len(self._tags)):
+                tags = tags + self._tags[index]
+                if index != len(self._tags) - 1:
+                    tags = tags + ','
+
+            value = '%s|#%s' % (value, tags)
+
         return '%s:%s' % (stat, value)
 
     def _after(self, data):
@@ -132,7 +141,7 @@ class StatsClient(StatsClientBase):
     """A client for statsd."""
 
     def __init__(self, host='localhost', port=8125, prefix=None,
-                 maxudpsize=512, ipv6=False):
+                 maxudpsize=512, ipv6=False, tags=[]):
         """Create a new client."""
         fam = socket.AF_INET6 if ipv6 else socket.AF_INET
         family, _, _, _, addr = socket.getaddrinfo(
@@ -141,6 +150,7 @@ class StatsClient(StatsClientBase):
         self._sock = socket.socket(family, socket.SOCK_DGRAM)
         self._prefix = prefix
         self._maxudpsize = maxudpsize
+        self._tags = tags
 
     def _send(self, data):
         """Send data to statsd."""
